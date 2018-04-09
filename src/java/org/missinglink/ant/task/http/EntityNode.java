@@ -258,8 +258,13 @@ public class EntityNode {
       return true;
     } else if (null != file) {
       return true;
+    } else if (null != value && value.length() > 0) {
+      return true;
     }
     return false;
   }
 
+  public String toString() {
+    return value;
+  }
 }

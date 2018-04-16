@@ -211,7 +211,7 @@ import java.io.File;
  * 
  */
 public class EntityNode {
-
+  protected boolean attachmentMode = false;
   protected String text;
   protected File file;
   protected String value;
@@ -219,6 +219,14 @@ public class EntityNode {
 
   public EntityNode() {
     super();
+  }
+
+  public boolean getAttachmentMode() {
+    return attachmentMode;
+  }
+
+  public void setAttachmentMode(final boolean name) {
+    this.attachmentMode = name;
   }
 
   public File getFile() {

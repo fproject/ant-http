@@ -204,15 +204,9 @@
 
 package org.missinglink.ant.task.http;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Field;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -226,6 +220,8 @@ import org.missinglink.http.client.HttpMethod;
 import org.missinglink.http.client.HttpResponse;
 import org.missinglink.http.exception.HttpCertificateException;
 import org.missinglink.http.exception.HttpInvocationException;
+
+import javax.json.*;
 
 /**
  * @author alex.sherwin
@@ -524,7 +520,29 @@ public class HttpClientTask extends Task {
             throw new BuildException(e);
           }
 
-          builder = builder.entity(new ByteArrayInputStream(os.toByteArray()), entity.getBinary());
+
+          if(entity.getAttachmentMode() && null != entity.getValue() && entity.getValue().length() > 0)
+          {
+            JsonReader jsonReader = Json.createReader(new StringReader(entity.getValue()));
+            JsonObject object = jsonReader.readObject();
+            jsonReader.close();
+
+            String att64 = Base64.getEncoder().encodeToString(os.toByteArray());
+            JsonObjectBuilder bdl = Json.createObjectBuilder();
+            bdl.add("attachment", att64);
+            object.entrySet().forEach(e -> bdl.add(e.getKey(), e.getValue()));
+            object = bdl.build();
+
+            //JsonWriter jsonWriter = Json.createWriter(new StringWriter());
+            //jsonWriter.writeObject(object);
+            //builder = builder.entity(jsonWriter.toString());
+            //jsonWriter.close();
+            builder = builder.entity(object.toString());
+          }
+          else
+          {
+            builder = builder.entity(new ByteArrayInputStream(os.toByteArray()), entity.getBinary());
+          }
         } else if (null != entity.getValue() && entity.getValue().length() > 0) {
           // 2. prefer value attribute
           builder = builder.entity(entity.getValue());
